@@ -1,0 +1,366 @@
+/**
+ * Welcome to Cloudflare Workers! This is your first worker.
+ *
+ * - Run "npm run dev" in your terminal to start a development server
+ * - Open a browser tab at http://localhost:8787/ to see your worker in action
+ * - Run "npm run deploy" to publish your worker
+ *
+ * Learn more at https://developers.cloudflare.com/workers/
+ */
+
+
+
+export default {
+  async fetch(request, env, ctx) {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Explore Whataburger nutrition, calories, menu categories, allergens and meal totals with this nutrition calculator.">
+<title>Whataburger Nutrition Calculator</title>
+<style>
+:root{--orange:#ed6a25;--dark:#c94d12;--cream:#fffaf4;--ink:#252525;--muted:#686868;--border:#f0e4d8;--green:#356b4b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font:16px/1.8 Arial,Helvetica,sans-serif}
+.container{width:min(1120px,calc(100% - 30px));margin:auto}
+p{color:var(--muted);margin-bottom:18px}
+h1,h2,h3,h4{line-height:1.3;margin-bottom:14px}
+h1{font-size:clamp(35px,5vw,58px);letter-spacing:-1.8px}
+h2{font-size:clamp(26px,3.5vw,36px)}
+h3{font-size:21px}
+.hero,.panel,.closing{margin-top:28px;padding:32px;border:1px solid var(--border);border-radius:22px;background:white}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center;padding:38px;background:linear-gradient(135deg,#fff0e3,#fffaf5)}
+.hero-photo{width:100%;height:340px;object-fit:cover;border-radius:18px}
+.hero,.closing{background:linear-gradient(135deg,#fff1e5,#fffaf5)}
+.eyebrow{display:block;color:var(--dark);font-size:12px;font-weight:800;letter-spacing:2px;margin-bottom:14px}
+.stats{display:flex;flex-wrap:wrap;gap:24px;margin-top:24px}
+.stats div{display:flex;flex-direction:column}
+.stats strong{font-size:22px;color:var(--dark)}
+.stats span,.small{font-size:12px;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}
+input,select{padding:12px;border:1px solid #e5d7c9;border-radius:9px;font:inherit;background:white}
+input{flex:1;min-width:200px}
+select{max-width:100%;min-width:170px}
+.calculator-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.8fr);gap:22px;align-items:start}
+.menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.menu-item,.card{overflow:hidden;border:1px solid var(--border);border-radius:14px;background:#fffdfb}
+.menu-photo{display:block;width:100%;height:155px;object-fit:cover}
+.menu-info{padding:15px}
+.menu-item h4{font-size:16px;margin-bottom:6px}
+.menu-item p,.card p{font-size:13px;margin-bottom:10px}
+button{border:0;border-radius:8px;background:var(--orange);color:white;font-weight:700;padding:10px 14px;cursor:pointer}
+button:hover{background:var(--dark)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--dark);outline-offset:2px}
+.summary{padding:20px;background:#fff7ef;border:1px solid #f2ddcb;border-radius:15px;position:sticky;top:15px}
+.selected-row,.totals div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.selected-row button{padding:3px 10px}
+.totals{margin:15px 0}
+.totals strong{color:var(--dark)}
+.secondary{width:100%;background:#333}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;text-align:left}
+th,td{padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{background:#fff0e5;color:var(--dark)}
+.cards,.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
+.card img{display:block;width:100%;height:150px;object-fit:cover}
+.card-content{padding:16px}
+.card h3{font-size:18px}
+.category-grid div{padding:14px;border:1px solid var(--border);border-radius:10px;background:#fff8f1;text-align:center;font-weight:700}
+.notice{padding:16px;border-left:4px solid var(--green);background:#f2f8f1}
+details{padding:17px 0;border-bottom:1px solid var(--border)}
+summary{font-weight:700;cursor:pointer}
+details p{margin:12px 0 0}
+.closing{margin-bottom:35px}
+.footer{text-align:center;padding:10px 0 35px;color:var(--muted);font-size:12px}
+@media(max-width:850px){
+ .hero{grid-template-columns:1fr}
+ .hero-photo{height:300px}
+ .calculator-layout{grid-template-columns:1fr}
+ .summary{position:static}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ .hero,.panel,.closing{padding:22px 17px}
+ .menu-grid,.cards{grid-template-columns:1fr}
+ .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hero-photo{height:220px}
+}
+</style>
+</head>
+<body>
+<main class="container">
+
+<section class="hero">
+<div>
+<span class="eyebrow">MENU NUTRITION GUIDE</span>
+<h1>Whataburger Nutrition Calculator</h1>
+<p><a href="https://whataburgermenunearme.us/"><a href="https://whataburgermenunearme.us/whataburger-nutrition-calculator/">Explore calories</a></a>, protein, carbohydrates, fat, sodium and sugar while building a meal. Compare menu options, understand portion sizes and review ingredient considerations before ordering.</p>
+<div class="stats">
+<div><strong>Calories</strong><span>Energy per serving</span></div>
+<div><strong>Macros</strong><span>Protein, carbs and fat</span></div>
+<div><strong>Ingredients</strong><span>Informed meal choices</span></div>
+</div>
+</div>
+<img class="hero-photo" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1000&q=85" alt="Juicy cheeseburger with fresh lettuce and tomato">
+</section>
+
+<section class="panel">
+<h2><a href="https://whataburgermenunearme.us/">Whataburger menu guide</a></h2>
+<p>Search or filter the menu, then add items to calculate combined nutrition totals. Figures in this sample calculator are illustrative and may differ from current restaurant information.</p>
+<div class="controls">
+<input id="search" type="search" placeholder="Search menu items..." aria-label="Search menu items">
+<select id="category" aria-label="Menu category">
+<option>All</option><option>Burgers</option><option>Chicken</option><option>Breakfast</option><option>Sides</option><option>Drinks</option><option>Desserts</option><option>Salads</option>
+</select>
+</div>
+<div class="calculator-layout">
+<div><h3>Menu Items</h3><div id="menu" class="menu-grid"></div></div>
+<aside class="summary">
+<h3>Your Meal</h3>
+<div id="selected">No items selected.</div>
+<div class="totals">
+<div><span>Calories</span><strong id="cal">0</strong></div>
+<div><span>Protein</span><strong id="protein">0 g</strong></div>
+<div><span>Carbs</span><strong id="carbs">0 g</strong></div>
+<div><span>Total fat</span><strong id="fat">0 g</strong></div>
+<div><span>Sodium</span><strong id="sodium">0 mg</strong></div>
+<div><span>Sugars</span><strong id="sugar">0 g</strong></div>
+</div>
+<p class="small">A 2,000-calorie diet is a general reference, not an individual recommendation.</p>
+<button id="clear" class="secondary" type="button">Clear Meal</button>
+</aside>
+</div>
+</section>
+
+<section class="panel">
+<h2>Calories by Menu Item</h2>
+<p>Compare example nutrition values for selected items. Portions, ingredients and customizations may affect actual figures.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Item</th><th>Calories</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Sodium</th></tr></thead>
+<tbody>
+<tr><td>Sweet &amp; Spicy Bacon Burger</td><td>1080</td><td>60 g</td><td>69 g</td><td>62 g</td><td>2313 mg</td></tr>
+<tr><td>Triple Meat Whataburger</td><td>1075</td><td>65 g</td><td>62 g</td><td>63 g</td><td>1718 mg</td></tr>
+<tr><td>Whataburger Patty Melt</td><td>941</td><td>49 g</td><td>46 g</td><td>61 g</td><td>1761 mg</td></tr>
+<tr><td>Classic Whataburger</td><td>595</td><td>29 g</td><td>62 g</td><td>25 g</td><td>1224 mg</td></tr>
+<tr><td>Grilled Chicken Sandwich</td><td>444</td><td>Check current data</td><td>Check current data</td><td>Check current data</td><td>Check current data</td></tr>
+<tr><td>French Fries</td><td>420</td><td>Check current data</td><td>Check current data</td><td>Check current data</td><td>Check current data</td></tr>
+<tr><td>Garden Salad</td><td>290</td><td>Check current data</td><td>Check current data</td><td>Check current data</td><td>Check current data</td></tr>
+<tr><td>Peach Shake</td><td>580</td><td>Check current data</td><td>Check current data</td><td>Check current data</td><td>Check current data</td></tr>
+</tbody></table></div>
+<p class="small">Example values only. Verify current official nutrition information before relying on specific figures.</p>
+</section>
+
+<section class="panel">
+<h2>Lower-Calorie Options</h2>
+<p>Smaller sides and unsweetened drinks may contain fewer calories than larger entrées or sweetened beverages. Serving sizes and additions can change totals.</p>
+<div class="cards">
+<article class="card">
+<img loading="lazy" src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=700&q=80" alt="Glass of iced tea">
+<div class="card-content"><h3>Unsweetened Tea</h3><p>May be a lower-calorie drink choice without added sweeteners.</p></div>
+</article>
+<article class="card">
+<img loading="lazy" src="https://images.unsplash.com/photo-1560807707-8cc77767d783?auto=format&fit=crop&w=700&q=80" alt="Fresh apples">
+<div class="card-content"><h3>Fruit Sides</h3><p>Check the serving size and current nutrition information.</p></div>
+</article>
+<article class="card">
+<img loading="lazy" src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=700&q=80" alt="Cup of coffee">
+<div class="card-content"><h3>Coffee</h3><p>Milk, sugar and syrups can change the nutrition profile.</p></div>
+</article>
+<article class="card">
+<img loading="lazy" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=700&q=80" alt="Fresh salad bowl">
+<div class="card-content"><h3>Salads</h3><p>Dressings, cheese and toppings affect nutrition totals.</p></div>
+</article>
+</div>
+</section>
+
+<section class="panel">
+<h2>Explore Menu Categories</h2>
+<p>Browse menu types to organize your choices. Availability may vary by location and time.</p>
+<div class="category-grid">
+<div>Burgers 🍔</div><div>Chicken 🍗</div><div>Breakfast 🍳</div><div>Drinks &amp; Shakes 🥤</div><div>Junior Meals 🍔</div><div>Desserts 🍦</div><div>Sides 🍟</div><div>Salads 🥗</div><div>Kids' Meals 🧒</div><div>Meal Bundles 🍱</div><div>Biscuits 🥐</div><div>Specialty Drinks 🧋</div>
+</div>
+</section>
+
+<section class="panel">
+<h2>Allergen Information</h2>
+<p>Nutrition facts and allergen details serve different purposes. Common allergens to check include wheat, milk, egg, soy, sesame and fish. Shared equipment or preparation areas may cause cross-contact.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Allergen</th><th>Ingredients to check</th></tr></thead>
+<tbody>
+<tr><td>Wheat</td><td>Buns, biscuits, breading and wraps</td></tr>
+<tr><td>Milk</td><td>Cheese, creamy sauces and shakes</td></tr>
+<tr><td>Egg</td><td>Mayonnaise, sauces and breakfast foods</td></tr>
+<tr><td>Soy</td><td>Sauces, buns and processed ingredients</td></tr>
+<tr><td>Sesame</td><td>Buns and applicable ingredients</td></tr>
+<tr><td>Fish</td><td>Confirm current ingredient details</td></tr>
+</tbody></table></div>
+<p class="notice">For severe allergies, verify ingredients and cross-contact risks directly with restaurant staff. This general guide cannot guarantee that an item is allergen-free.</p>
+</section>
+
+<section class="panel">
+<h2>Eating Mindfully at Whataburger</h2>
+<h3>Review the complete meal</h3>
+<p>Your entrée, side, drink, sauces and toppings all contribute to the meal total. Adding each item gives a more useful estimate than checking the main dish alone.</p>
+<h3>Compare drinks and sides</h3>
+<p>Sweetened drinks and shakes may add calories and sugar. Compare alternatives based on your preferences and nutritional needs.</p>
+<h3>Understand macronutrients</h3>
+<p>Calories describe energy, while protein, carbohydrates and fat provide additional information. Sodium and sugar can also help when comparing options.</p>
+<h3>Consider customizations</h3>
+<p>Removing or adding a bun, cheese, sauce or topping may change nutrition totals. Use verified figures for the modified serving when available.</p>
+<h3>Check updated information</h3>
+<p>Recipes, portions and availability may change. Use current restaurant information when accurate figures matter.</p>
+</section>
+
+<section class="panel">
+<h2>Frequently Asked Questions</h2>
+<details><summary>How many calories are in a Whataburger meal?</summary><p>The total depends on the entrée, sides, drink, portion sizes and customizations. Add each item to estimate the meal.</p></details>
+<details><summary>Which items have fewer calories?</summary><p>Some unsweetened beverages and smaller sides may be lower in calories than full entrées. Compare current portions and ingredients.</p></details>
+<details><summary>Can I compare protein and carbohydrates?</summary><p>Yes. Compare each item's values alongside calories, fat and sodium.</p></details>
+<details><summary>Are calculator totals exact?</summary><p>The calculator adds values from its sample dataset. Actual orders may differ because of ingredients, preparation and menu updates.</p></details>
+<details><summary>Does removing a bun or sauce change nutrition?</summary><p>It can. Ingredient changes may affect calories and other nutrient totals.</p></details>
+<details><summary>Can people with allergies rely on this guide?</summary><p>No. Confirm current ingredients and cross-contact risks with restaurant staff.</p></details>
+<details><summary>Is a 2,000-calorie diet right for everyone?</summary><p>No. It is a general reference, not an individualized dietary recommendation.</p></details>
+</section>
+
+<section class="closing">
+<span class="eyebrow">MAKE INFORMED CHOICES</span>
+<h2>Plan Your Order With More Confidence</h2>
+<p>Compare meals and understand how each item contributes to your order. Consider portion sizes, ingredients, beverages and sides together.</p>
+<p class="small">Disclaimer: This is an independent informational resource, not an official Whataburger website. Images are illustrative and hosted externally. Nutrition figures and menu availability can change. Confirm current information with the restaurant, especially when managing allergies.</p>
+</section>
+
+<div class="footer">Nutrition information is provided for general informational purposes.</div>
+</main>
+
+<script>
+const items = [
+{name:"Whataburger",cat:"Burgers",cal:595,protein:29,carbs:62,fat:25,sodium:1224,sugar:11,img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=700&q=80"},
+{name:"Double Meat Whataburger",cat:"Burgers",cal:832,protein:47,carbs:62,fat:44,sodium:1471,sugar:11,img:"https://images.unsplash.com/photo-1553979459-d2229ba7433a?auto=format&fit=crop&w=700&q=80"},
+{name:"Triple Meat Whataburger",cat:"Burgers",cal:1075,protein:65,carbs:62,fat:63,sodium:1718,sugar:11,img:"https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=700&q=80"},
+{name:"Sweet & Spicy Bacon Burger",cat:"Burgers",cal:1080,protein:60,carbs:69,fat:62,sodium:2313,sugar:18,img:"https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=700&q=80"},
+{name:"Whataburger Patty Melt",cat:"Burgers",cal:941,protein:49,carbs:46,fat:61,sodium:1761,sugar:7,img:"https://images.unsplash.com/photo-1553979459-d2229ba7433a?auto=format&fit=crop&w=700&q=80"},
+{name:"Grilled Chicken Sandwich",cat:"Chicken",cal:444,protein:30,carbs:45,fat:12,sodium:1200,sugar:7,img:"https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=700&q=80"},
+{name:"Spicy Chicken Sandwich",cat:"Chicken",cal:554,protein:25,carbs:55,fat:26,sodium:1500,sugar:7,img:"https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=700&q=80"},
+{name:"Honey Butter Chicken Biscuit",cat:"Breakfast",cal:577,protein:15,carbs:50,fat:36,sodium:998,sugar:9,img:"https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=700&q=80"},
+{name:"Breakfast Platter",cat:"Breakfast",cal:649,protein:29,carbs:38,fat:43,sodium:1224,sugar:5,img:"https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=700&q=80"},
+{name:"French Fries",cat:"Sides",cal:420,protein:5,carbs:57,fat:20,sodium:350,sugar:1,img:"https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80"},
+{name:"Applesauce",cat:"Sides",cal:40,protein:0,carbs:10,fat:0,sodium:0,sugar:8,img:"https://images.unsplash.com/photo-1560807707-8cc77767d783?auto=format&fit=crop&w=700&q=80"},
+{name:"Garden Salad",cat:"Salads",cal:290,protein:8,carbs:18,fat:20,sodium:500,sugar:6,img:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=700&q=80"},
+{name:"Tea",cat:"Drinks",cal:10,protein:0,carbs:2,fat:0,sodium:10,sugar:0,img:"https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=700&q=80"},
+{name:"Soft Drink",cat:"Drinks",cal:390,protein:0,carbs:105,fat:0,sodium:80,sugar:105,img:"https://images.unsplash.com/photo- soda-not-real?auto=format&fit=crop&w=700&q=80"},
+{name:"Peach Shake",cat:"Desserts",cal:580,protein:12,carbs:106,fat:14,sodium:480,sugar:90,img:"https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=700&q=80"},
+{name:"Brownie",cat:"Desserts",cal:390,protein:5,carbs:54,fat:18,sodium:250,sugar:35,img:"https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=700&q=80"}
+];
+
+const selected = new Map();
+const menu = document.getElementById("menu");
+const search = document.getElementById("search");
+const category = document.getElementById("category");
+
+function renderMenu(){
+ const query=search.value.toLowerCase();
+ const cat=category.value;
+ menu.replaceChildren();
+
+ items.filter(i=>i.name.toLowerCase().includes(query)&&(cat==="All"||i.cat===cat)).forEach(i=>{
+  const card=document.createElement("article");
+  card.className="menu-item";
+
+  const img=document.createElement("img");
+  img.className="menu-photo";
+  img.src=i.img;
+  img.alt=i.name;
+  img.loading="lazy";
+  img.onerror=()=>{img.style.display="none"};
+
+  const info=document.createElement("div");
+  info.className="menu-info";
+
+  const title=document.createElement("h4");
+  title.textContent=i.name;
+
+  const desc=document.createElement("p");
+  desc.textContent=i.cat+" · "+i.cal+" calories";
+
+  const button=document.createElement("button");
+  button.type="button";
+  button.textContent="Add +";
+  button.addEventListener("click",()=>{
+   selected.set(i.name,(selected.get(i.name)||0)+1);
+   renderMenu();
+   renderSelected();
+  });
+
+  info.append(title,desc,button);
+  card.append(img,info);
+  menu.append(card);
+ });
+
+ if(!menu.children.length)menu.textContent="No matching items found.";
+}
+
+function renderSelected(){
+ const box=document.getElementById("selected");
+ box.replaceChildren();
+
+ const total={cal:0,protein:0,carbs:0,fat:0,sodium:0,sugar:0};
+
+ if(!selected.size)box.textContent="No items selected.";
+
+ selected.forEach((qty,name)=>{
+  const item=items.find(i=>i.name===name);
+  Object.keys(total).forEach(k=>total[k]+=item[k]*qty);
+
+  const row=document.createElement("div");
+  row.className="selected-row";
+
+  const label=document.createElement("span");
+  label.textContent=name+" × "+qty;
+
+  const remove=document.createElement("button");
+  remove.type="button";
+  remove.textContent="−";
+  remove.setAttribute("aria-label","Remove one "+name);
+  remove.addEventListener("click",()=>{
+   const n=selected.get(name)-1;
+   if(n<=0)selected.delete(name);
+   else selected.set(name,n);
+   renderMenu();
+   renderSelected();
+  });
+
+  row.append(label,remove);
+  box.append(row);
+ });
+
+ document.getElementById("cal").textContent=total.cal.toLocaleString();
+ document.getElementById("protein").textContent=total.protein+" g";
+ document.getElementById("carbs").textContent=total.carbs+" g";
+ document.getElementById("fat").textContent=total.fat+" g";
+ document.getElementById("sodium").textContent=total.sodium.toLocaleString()+" mg";
+ document.getElementById("sugar").textContent=total.sugar+" g";
+}
+
+search.addEventListener("input",renderMenu);
+category.addEventListener("change",renderMenu);
+document.getElementById("clear").addEventListener("click",()=>{
+ selected.clear();
+ renderMenu();
+ renderSelected();
+});
+
+renderMenu();
+renderSelected();
+</script>
+</body>
+</html>`;
+
+    return new Response(html, {
+      headers: {
+        "content-type": "text/html;charset=UTF-8"
+      }
+    });
+  }
+};
